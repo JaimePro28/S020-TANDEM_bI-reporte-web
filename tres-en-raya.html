@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3 en Raya</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: 2px;
+      color: #e94560;
+    }
+
+    .status {
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+      min-height: 1.8rem;
+      color: #a8dadc;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 110px);
+      grid-template-rows: repeat(3, 110px);
+      gap: 10px;
+      margin: 0 auto 1.5rem;
+      width: fit-content;
+    }
+
+    .cell {
+      width: 110px;
+      height: 110px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      font-size: 3rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+      user-select: none;
+    }
+
+    .cell:hover:not(.taken) {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.05);
+    }
+
+    .cell.x {
+      color: #e94560;
+    }
+
+    .cell.o {
+      color: #a8dadc;
+    }
+
+    .cell.winner {
+      background: rgba(233, 69, 96, 0.25);
+      border-color: #e94560;
+      animation: pulse 0.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to   { transform: scale(1.07); }
+    }
+
+    .scores {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .score-box {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 0.6rem 1.2rem;
+      min-width: 80px;
+    }
+
+    .score-box .label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .score-box .value {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .score-box.x-score .value { color: #e94560; }
+    .score-box.o-score .value { color: #a8dadc; }
+    .score-box.draw-score .value { color: #f4a261; }
+
+    .btn {
+      background: #e94560;
+      color: #fff;
+      border: none;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 1px;
+    }
+
+    .btn:hover {
+      background: #c73652;
+      transform: scale(1.03);
+    }
+
+    .mode-selector {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .mode-btn {
+      background: rgba(255,255,255,0.08);
+      color: #ccc;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: #e94560;
+      color: #fff;
+      border-color: #e94560;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>3 en Raya</h1>
+
+    <div class="mode-selector">
+      <button class="mode-btn active" id="btn-pvp" onclick="setMode('pvp')">2 Jugadores</button>
+      <button class="mode-btn" id="btn-cpu" onclick="setMode('cpu')">vs CPU</button>
+    </div>
+
+    <div class="scores">
+      <div class="score-box x-score">
+        <div class="label">X</div>
+        <div class="value" id="score-x">0</div>
+      </div>
+      <div class="score-box draw-score">
+        <div class="label">Empate</div>
+        <div class="value" id="score-draw">0</div>
+      </div>
+      <div class="score-box o-score">
+        <div class="label">O</div>
+        <div class="value" id="score-o">0</div>
+      </div>
+    </div>
+
+    <div class="status" id="status">Turno de X</div>
+
+    <div class="board" id="board">
+      <div class="cell" onclick="play(0)"></div>
+      <div class="cell" onclick="play(1)"></div>
+      <div class="cell" onclick="play(2)"></div>
+      <div class="cell" onclick="play(3)"></div>
+      <div class="cell" onclick="play(4)"></div>
+      <div class="cell" onclick="play(5)"></div>
+      <div class="cell" onclick="play(6)"></div>
+      <div class="cell" onclick="play(7)"></div>
+      <div class="cell" onclick="play(8)"></div>
+    </div>
+
+    <button class="btn" onclick="resetGame()">Nueva Partida</button>
+  </div>
+
+  <script>
+    const WINS = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    let board = Array(9).fill(null);
+    let current = 'X';
+    let gameOver = false;
+    let mode = 'pvp';
+    let scores = { X: 0, O: 0, draw: 0 };
+
+    function setMode(m) {
+      mode = m;
+      document.getElementById('btn-pvp').classList.toggle('active', m === 'pvp');
+      document.getElementById('btn-cpu').classList.toggle('active', m === 'cpu');
+      resetGame();
+    }
+
+    function play(i) {
+      if (gameOver || board[i]) return;
+      makeMove(i, current);
+      if (!gameOver && mode === 'cpu' && current === 'O') {
+        setTimeout(cpuMove, 350);
+      }
+    }
+
+    function makeMove(i, player) {
+      board[i] = player;
+      const cell = document.querySelectorAll('.cell')[i];
+      cell.textContent = player;
+      cell.classList.add(player.toLowerCase(), 'taken');
+
+      const win = checkWin(player);
+      if (win) {
+        win.forEach(idx => document.querySelectorAll('.cell')[idx].classList.add('winner'));
+        setStatus(`¡${player} gana!`);
+        scores[player]++;
+        updateScores();
+        gameOver = true;
+      } else if (board.every(c => c)) {
+        setStatus('¡Empate!');
+        scores.draw++;
+        updateScores();
+        gameOver = true;
+      } else {
+        current = current === 'X' ? 'O' : 'X';
+        setStatus(`Turno de ${current}${mode === 'cpu' && current === 'O' ? ' (CPU)' : ''}`);
+      }
+    }
+
+    function cpuMove() {
+      const move = bestMove();
+      if (move !== null) makeMove(move, 'O');
+    }
+
+    function bestMove() {
+      for (let i = 0; i < 9; i++) {
+        if (!board[i]) {
+          board[i] = 'O';
+          if (checkWin('O')) { board[i] = null; return i; }
+          board[i] = null;
+        }
+      }
+      for (let i = 0; i < 9; i++) {
+        if (!board[i]) {
+          board[i] = 'X';
+          if (checkWin('X')) { board[i] = null; return i; }
+          board[i] = null;
+        }
+      }
+      const order = [4, 0, 2, 6, 8, 1, 3, 5, 7];
+      return order.find(i => !board[i]) ?? null;
+    }
+
+    function checkWin(player) {
+      return WINS.find(combo => combo.every(i => board[i] === player)) || null;
+    }
+
+    function setStatus(msg) {
+      document.getElementById('status').textContent = msg;
+    }
+
+    function updateScores() {
+      document.getElementById('score-x').textContent = scores.X;
+      document.getElementById('score-o').textContent = scores.O;
+      document.getElementById('score-draw').textContent = scores.draw;
+    }
+
+    function resetGame() {
+      board = Array(9).fill(null);
+      current = 'X';
+      gameOver = false;
+      document.querySelectorAll('.cell').forEach(cell => {
+        cell.textContent = '';
+        cell.className = 'cell';
+      });
+      setStatus('Turno de X');
+    }
+  </script>
+</body>
+</html>
